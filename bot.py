@@ -8,7 +8,7 @@ from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 import httpx
 
-# Токен вашего бота (лучше брать из переменной окружения на Render, но можно подставить строку)
+# Токен вашего бота
 TOKEN = "8975709751:AAGQrX27XnEM7TDCH_ENUOqWuuFSZQk2W0k"
 
 bot = Bot(token=TOKEN)
@@ -742,15 +742,133 @@ SERVERS = [
             "meta": {"serverDescription": "VLESS"},
         },
     },
+    {
+        "name": "🇳🇴Норвегия - БС",
+        "type": "json",
+        "ping_url": "https://wl.wlrus.lol",
+        "data": {
+            "log": {"loglevel": "warning"},
+            "dns": {"servers": ["1.1.1.1"], "queryStrategy": "UseIP"},
+            "inbounds": [
+                {
+                    "tag": "socks",
+                    "listen": "127.0.0.1",
+                    "port": 10808,
+                    "protocol": "socks",
+                    "settings": {"auth": "noauth", "udp": True},
+                    "sniffing": {
+                        "enabled": True,
+                        "routeOnly": False,
+                        "destOverride": ["http", "tls", "quic"],
+                    },
+                },
+                {
+                    "tag": "http",
+                    "listen": "127.0.0.1",
+                    "port": 10809,
+                    "protocol": "http",
+                    "settings": {"allowTransparent": False},
+                    "sniffing": {
+                        "enabled": True,
+                        "routeOnly": False,
+                        "destOverride": ["http", "tls", "quic"],
+                    },
+                },
+            ],
+            "outbounds": [
+                {
+                    "tag": "🇳🇴Норвегия - БС",
+                    "remarks": "🇳🇴Норвегия - БС",
+                    "protocol": "vless",
+                    "settings": {
+                        "vnext": [
+                            {
+                                "address": "wl.wlrus.lol",
+                                "port": 443,
+                                "users": [
+                                    {
+                                        "id": "7e7423fb-63c5-4e1d-9370-b9e8574b4ed4",
+                                        "encryption": "none",
+                                        "flow": "",
+                                    }
+                                ],
+                            }
+                        ]
+                    },
+                    "streamSettings": {
+                        "network": "xhttp",
+                        "xhttpSettings": {
+                            "mode": "packet-up",
+                            "host": "wl.wlrus.lol",
+                            "path": "/media/live/",
+                            "extra": {
+                                "mode": "packet-up",
+                                "path": "/media/live/",
+                                "xmux": {
+                                    "cMaxReuseTimes": "128-256",
+                                    "maxConcurrency": "8-16",
+                                    "hKeepAlivePeriod": 15,
+                                    "hMaxRequestTimes": "1000-2000",
+                                    "hMaxReusableSecs": "1800-3600",
+                                },
+                                "headers": {
+                                    "Accept": "*/*",
+                                    "Cookie": (
+                                        "session_id=c82ad25936fa2f3776a6d0a1767d4799"
+                                    ),
+                                    "Origin": "https://wl.wlrus.lol/",
+                                    "Referer": "https://wl.wlrus.lol/",
+                                    "User-Agent": (
+                                        "Mozilla/5.0 (Windows NT 10.0; Win64;"
+                                        " x64; rv:151.0) Gecko/20100101"
+                                        " Firefox/151.0"
+                                    ),
+                                    "Sec-Fetch-Dest": "empty",
+                                    "Sec-Fetch-Mode": "cors",
+                                    "Sec-Fetch-Site": "same-origin",
+                                    "Accept-Language": (
+                                        "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7"
+                                    ),
+                                },
+                                "noSSEHeader": False,
+                                "xPaddingKey": "_rnd",
+                                "xPaddingBytes": "48-300",
+                                "xPaddingHeader": "X-Cache",
+                                "xPaddingMethod": "tokenish",
+                                "uplinkHTTPMethod": "GET",
+                                "xPaddingObfsMode": True,
+                                "xPaddingPlacement": "queryInHeader",
+                                "scMaxBufferedPosts": 512,
+                                "scMaxEachPostBytes": 524288,
+                                "scMaxConcurrentPosts": 2,
+                                "scMinPostsIntervalMs": "50-150",
+                            },
+                        },
+                        "security": "tls",
+                        "tlsSettings": {
+                            "serverName": "wl.wlrus.lol",
+                            "fingerprint": "firefox",
+                            "alpn": ["h2", "http/1.1"],
+                        },
+                    },
+                },
+                {"tag": "direct", "protocol": "freedom"},
+                {"tag": "block", "protocol": "blackhole"},
+            ],
+            "remarks": "🇳🇴Норвегия - БС",
+            "meta": {"serverDescription": "VLESS"},
+        },
+    },
 ]
 
 
 def get_main_keyboard():
-    """Нижняя клавиатура (как на скриншоте)"""
+    """Нижняя клавиатура"""
     builder = ReplyKeyboardBuilder()
     builder.button(text="🏓 Пинг серверов")
     builder.button(text="📦 Получить сервер")
-    builder.adjust(2)
+    builder.button(text="ℹ️ О боте")
+    builder.adjust(2, 1)
     return builder.as_markup(resize_keyboard=True)
 
 
@@ -778,30 +896,46 @@ def get_times_str():
 
 
 async def measure_ping(url):
-    """Измерение пинга до сервера"""
+    """Измерение пинга до сервера (возвращает только успех/неуспех и реальный пинг)"""
     start_time = asyncio.get_event_loop().time()
     try:
-        async with httpx.AsyncClient(timeout=10.0, http2=True) as client:
+        async with httpx.AsyncClient(timeout=6.0, http2=True) as client:
             response = await client.get(url)
             end_time = asyncio.get_event_loop().time()
             latency = int((end_time - start_time) * 1000)
-            return True, latency, response.status_code
+            return True, latency
     except Exception:
-        return False, 0, 0
+        return False, 0
 
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     await message.answer(
-        "👋 Привет!\nИспользуй кнопки внизу для проверки пинга или получения конфигураций серверов.",
+        "👋 **Добро пожаловать!**\n\n"
+        "Этот компактный помощник создан для управления конфигурациями и быстрой проверки доступности ваших узлов.\n"
+        "Используйте удобные кнопки на клавиатуре ниже 👇",
         reply_markup=get_main_keyboard(),
+        parse_mode="Markdown",
+    )
+
+
+@dp.message(F.text == "ℹ️ О боте")
+async def cmd_about(message: types.Message):
+    await message.answer(
+        "🛠 **Информация о системе:**\n\n"
+        "• Статус сервиса: `🟢 Работает стабильно`\n"
+        "• Платформа: `Render / Python 3.14`\n"
+        "• Назначение: Мониторинг и выдача конфигов\n\n"
+        "Все ноды защищены и оптимизированы под актуальные протоколы.",
+        reply_markup=get_main_keyboard(),
+        parse_mode="Markdown",
     )
 
 
 @dp.message(F.text == "🏓 Пинг серверов")
 async def menu_ping(message: types.Message):
     await message.answer(
-        "🏓 Выберите сервер для проверки пинга или проверьте все сразу:",
+        "🏓 Выберите сервер для проверки связи или запустите общий тест:",
         reply_markup=get_servers_inline_keyboard("ping"),
     )
 
@@ -809,7 +943,7 @@ async def menu_ping(message: types.Message):
 @dp.message(F.text == "📦 Получить сервер")
 async def menu_get_server(message: types.Message):
     await message.answer(
-        "📦 Выберите сервер, конфигурацию которого хотите получить:",
+        "📦 Выберите нужный сервер для выгрузки конфигурации:",
         reply_markup=get_servers_inline_keyboard("get"),
     )
 
@@ -820,17 +954,17 @@ async def callback_ping(callback: types.CallbackQuery):
 
     if data_parts[1] == "all":
         await callback.message.edit_text(
-            "⏳ Пингуем все сервера одновременно, подождите..."
+            "⏳ Выполняется комплексная проверка всех узлов, подождите..."
         )
-        text_results = "📊 **Результаты пинга всех серверов:**\n\n"
+        text_results = "📊 **Результаты проверки серверов:**\n\n"
         time_msk, time_ekb = get_times_str()
 
         for s in SERVERS:
-            success, latency, status = await measure_ping(s["ping_url"])
+            success, latency = await measure_ping(s["ping_url"])
             if success:
-                text_results += f"✅ **{s['name']}**\n   ⏱ Пинг: `{latency} ms` | Статус: `{status}`\n\n"
+                text_results += f"✅ **{s['name']}**\n   └ Статус: `Доступен` (`{latency} ms`)\n\n"
             else:
-                text_results += f"❌ **{s['name']}**\n   ⏱ Недоступен (Timeout)\n\n"
+                text_results += f"❌ **{s['name']}**\n   └ Статус: `Недоступен`\n\n"
 
         text_results += f"🕒 МСК: `{time_msk}` | ЕКБ: `{time_ekb}`"
         await callback.message.edit_text(text_results, parse_mode="Markdown")
@@ -838,26 +972,24 @@ async def callback_ping(callback: types.CallbackQuery):
         idx = int(data_parts[1])
         s = SERVERS[idx]
         await callback.message.edit_text(
-            f"⏱ Пингуем сервер *{s['name']}*...", parse_mode="Markdown"
+            f"⏱ Проверяем узел *{s['name']}*...", parse_mode="Markdown"
         )
 
-        success, latency, status = await measure_ping(s["ping_url"])
+        success, latency = await measure_ping(s["ping_url"])
         time_msk, time_ekb = get_times_str()
 
         if success:
             res_text = (
                 f"✅ **Сервер доступен!**\n"
                 f"📌 {s['name']}\n"
-                f"⏱ Пинг (HTTP GET): `{latency} ms`\n"
-                f"🌐 Статус ответа: `{status}`\n\n"
+                f"⏱ Задержка: `{latency} ms`\n\n"
                 f"🕒 Время (МСК): `{time_msk}`\n"
                 f"🕒 Время (ЕКБ): `{time_ekb}`"
             )
         else:
             res_text = (
                 f"❌ **Сервер недоступен!**\n"
-                f"📌 {s['name']}\n"
-                f"⏱ Тайм-аут соединения\n\n"
+                f"📌 {s['name']}\n\n"
                 f"🕒 Время (МСК): `{time_msk}`\n"
                 f"🕒 Время (ЕКБ): `{time_ekb}`"
             )
@@ -880,7 +1012,6 @@ async def callback_get_server(callback: types.CallbackQuery):
 
     if s["type"] == "json":
         json_str = json.dumps(s["data"], ensure_ascii=False, indent=2)
-        # Телеграм имеет ограничение на длину сообщения, если файл большой, отправляем текстом в кодировке бэка
         if len(json_str) > 4000:
             await callback.message.answer(header_info, parse_mode="Markdown")
             file_bytes = json_str.encode("utf-8")
