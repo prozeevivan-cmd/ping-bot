@@ -3,6 +3,7 @@ import time
 import httpx
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
+from aiohttp import web
 
 # Токен вашего бота
 TOKEN = "8975709751:AAGQrX27XnEM7TDCH_ENUOqWuuFSZQk2W0k"
@@ -50,8 +51,27 @@ async def cmd_ping(message: types.Message):
             parse_mode="Markdown"
         )
 
+# Заглушка веб-сервера для Render, чтобы он видел открытый порт
+async def handle(request):
+    return web.Response(text="Bot is running!")
+
+async def start_web_server():
+    app = web.Application()
+    app.add_routes([web.get('/', handle)])
+    runner = web.AppRunner(app)
+    await runner.setup()
+    # Render передает порт через переменную окружения PORT
+    port = 8080 
+    import os
+    if "PORT" in os.environ:
+        port = int(os.environ["PORT"])
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
 async def main():
-    print("Бот @PingNorr_bot запущен...")
+    # Запускаем веб-сервер и бота одновременно
+    await start_web_server()
+    print("Бот и веб-сервер запущены...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
