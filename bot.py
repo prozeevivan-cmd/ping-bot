@@ -9,7 +9,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 import httpx
 
 # Токен вашего бота (лучше брать из переменной окружения на Render, но можно подставить строку)
-TOKEN = os.getenv("BOT_TOKEN", "ХХХ_ВАШ_ТОКЕН_БОТА_ХХХ")
+TOKEN = "8975709751:AAGQrX27XnEM7TDCH_ENUOqWuuFSZQk2W0k"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
