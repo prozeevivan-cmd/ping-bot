@@ -17,13 +17,11 @@ def home():
     return "Бот работает и готов к пингам UptimeRobot!"
 
 def run_web_server():
-    # Запуск веб-сервера на порту 8080
     app.run(host='0.0.0.0', port=8080)
 
 # ==========================================
 # 2. НАСТРОЙКА БОТА И БАЗЫ ДАННЫХ
 # ==========================================
-# Токен прописан прямо в коде
 TOKEN = "8935315154:AAEtbDIDrCfStciV91IP7B8W8LutcYBtCiE"
 
 bot = Bot(token=TOKEN)
@@ -60,8 +58,9 @@ def check_user(user_id, username):
 # 3. КОМАНДЫ БОТА
 # ==========================================
 
-# Команда /профиль или профиль
-@dp.message(Command("профиль") | (F.text.lower() == "профиль"))
+# Команда /профиль или просто текст "профиль"
+@dp.message(Command("профиль"))
+@dp.message(F.text.lower() == "профиль")
 async def cmd_profile(message: Message):
     user_id = message.from_user.id
     username = message.from_user.first_name
@@ -79,8 +78,9 @@ async def cmd_profile(message: Message):
     )
     await message.reply(text, parse_mode="Markdown")
 
-# Команда /баланс или баланс
-@dp.message(Command("баланс") | (F.text.lower() == "баланс"))
+# Команда /баланс или просто текст "баланс"
+@dp.message(Command("баланс"))
+@dp.message(F.text.lower() == "баланс")
 async def cmd_balance(message: Message):
     user_id = message.from_user.id
     check_user(user_id, message.from_user.first_name)
@@ -90,8 +90,9 @@ async def cmd_balance(message: Message):
     
     await message.reply(f"🪙 Ваши монеты: {coins}\n💎 Ваши гемы: {gems}", parse_mode="Markdown")
 
-# Команда /магазин или магазин
-@dp.message(Command("магазин") | (F.text.lower() == "магазин"))
+# Команда /магазин или просто текст "магазин"
+@dp.message(Command("магазин"))
+@dp.message(F.text.lower() == "магазин")
 async def cmd_shop(message: Message):
     text = (
         "🛒 Магазин товаров Starbally\n\n"
@@ -147,13 +148,11 @@ async def cmd_buy(message: Message):
 # 4. ЗАПУСК БОТА И ВЕБ-СЕРВЕРА
 # ==========================================
 async def main():
-    # Запускаем веб-сервер в фоновом режиме для UptimeRobot
     server_thread = threading.Thread(target=run_web_server)
     server_thread.daemon = True
     server_thread.start()
     
     print("Бот и веб-сервер успешно запущены!")
-    # Запуск бота (поллинг)
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
