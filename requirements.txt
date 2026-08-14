@@ -1,4 +1,2 @@
-aiogram
-httpx
-aiohttp
-pytz
+aiogram>=3.0
+flask
