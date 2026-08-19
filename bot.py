@@ -26,7 +26,7 @@ def run_web_server():
 # ==========================================
 # 2. НАСТРОЙКА БОТА И БАЗЫ ДАННЫХ
 # ==========================================
-TOKEN = "8935315154:AAEtbDIDrCfStciV91IP7B8W8LutcYBtCiE"
+TOKEN = "8714849957:AAF60mTk5KZZUdxYn9c5KIO3V5C-Vj-s-GQ"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
